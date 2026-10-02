@@ -1,0 +1,89 @@
+.superposition-panneau {
+  position: fixed;
+  inset: 0;
+  background: rgba(28, 43, 57, 0.4);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 80px;
+  z-index: 10;
+}
+
+.panneau-creation {
+  background: var(--couleur-blanc);
+  color: var(--couleur-marine);
+  border: 1px solid var(--couleur-bordure);
+  border-radius: var(--rayon-moyen);
+  padding: 28px 32px;
+  width: 100%;
+  max-width: 480px;
+}
+
+.panneau-creation h2 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+
+.panneau-sous-titre {
+  font-size: 13px;
+  color: var(--couleur-gris-texte);
+  margin: 0 0 var(--espace-6);
+}
+
+.champ {
+  margin-bottom: var(--espace-4);
+}
+
+.champ label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: var(--espace-2);
+}
+
+.champ select,
+.champ input {
+  width: 100%;
+  padding: 9px 12px;
+  font-family: var(--police-texte);
+  font-size: 14px;
+  border: 1px solid var(--couleur-bordure);
+  border-radius: var(--rayon-petit);
+  background: var(--couleur-fond);
+  color: var(--couleur-marine);
+}
+
+.champ select:disabled,
+.champ input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.champ select:focus,
+.champ input:focus {
+  outline: none;
+  border-color: var(--couleur-vert);
+  box-shadow: 0 0 0 3px rgba(61, 107, 92, 0.12);
+}
+
+.rangee-deux-champs {
+  display: flex;
+  gap: var(--espace-3);
+}
+
+.rangee-deux-champs .champ {
+  flex: 1;
+}
+
+.message-erreur-panneau {
+  font-size: 13px;
+  color: var(--couleur-erreur);
+  margin: 0 0 var(--espace-4);
+}
+
+.boutons-panneau {
+  display: flex;
+  gap: 10px;
+  margin-top: var(--espace-6);
+}

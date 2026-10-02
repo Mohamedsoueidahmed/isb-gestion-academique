@@ -1,0 +1,29 @@
+.etapes {
+  display: flex;
+  gap: var(--espace-2);
+  margin-bottom: var(--espace-6);
+}
+
+.etape-puce {
+  flex: 1;
+  height: 3px;
+  background: var(--couleur-bordure);
+  border-radius: 2px;
+}
+
+.etape-puce.active {
+  background: var(--couleur-vert);
+}
+
+.confirmation-etudiant {
+  background: #EEF3F1;
+  border: 1px solid #D3E3DC;
+  border-radius: var(--rayon-petit);
+  padding: 12px 14px;
+  font-size: 13px;
+  margin-bottom: var(--espace-5);
+}
+
+.confirmation-etudiant strong {
+  color: var(--couleur-vert-fonce);
+}

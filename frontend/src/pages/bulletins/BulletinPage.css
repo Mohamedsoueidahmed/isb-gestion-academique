@@ -1,0 +1,115 @@
+.selecteurs-bulletin {
+  display: flex;
+  gap: var(--espace-4);
+  align-items: flex-end;
+  margin-bottom: var(--espace-6);
+  background: var(--couleur-blanc);
+  border: 1px solid var(--couleur-bordure);
+  border-radius: var(--rayon-moyen);
+  padding: var(--espace-5) var(--espace-6);
+}
+
+.selecteurs-bulletin .champ-selecteur {
+  flex: 1;
+}
+
+.selecteurs-bulletin .champ-selecteur label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: var(--espace-2);
+}
+
+.selecteurs-bulletin select {
+  width: 100%;
+  padding: 9px 12px;
+  font-family: var(--police-texte);
+  font-size: 14px;
+  border: 1px solid var(--couleur-bordure);
+  border-radius: var(--rayon-petit);
+  background: var(--couleur-fond);
+  color: var(--couleur-marine);
+}
+
+.bouton-telecharger {
+  white-space: nowrap;
+}
+
+.entete-bulletin-etudiant {
+  margin-bottom: var(--espace-4);
+}
+
+.entete-bulletin-etudiant h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+
+.entete-bulletin-etudiant span {
+  font-family: monospace;
+  font-size: 13px;
+  color: var(--couleur-gris-texte);
+}
+
+table.tableau-bulletin td,
+table.tableau-bulletin th {
+  text-align: center;
+}
+
+table.tableau-bulletin td:first-child,
+table.tableau-bulletin th:first-child {
+  text-align: left;
+}
+
+.ligne-groupe-ue td {
+  background: #F4F3EF;
+  font-weight: 600;
+  color: var(--couleur-marine);
+  font-size: 13px;
+}
+
+.ligne-groupe-ue-validee td {
+  background: #EAF3EC;
+  color: #2E6B45;
+}
+
+.ligne-groupe-ue-non-validee td {
+  background: #FBEAE7;
+  color: #B0392A;
+}
+
+.bandeau-moyenne-semestre {
+  background: #F4F3EF;
+  border: 1px solid var(--couleur-bordure);
+  border-radius: var(--rayon-petit);
+  padding: 12px 16px;
+  margin-top: var(--espace-4);
+  font-weight: 600;
+  color: var(--couleur-marine);
+  font-size: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bandeau-semestre-valide {
+  background: #EAF3EC;
+  border-color: #C7E0D0;
+  color: #2E6B45;
+}
+
+.bandeau-semestre-non-valide {
+  background: #FBEAE7;
+  border-color: #F0C9C2;
+  color: #B0392A;
+}
+
+.statut-semestre-texte {
+  font-size: 14px;
+}
+
+.avertissement-bulletin {
+  font-size: 12px;
+  color: var(--couleur-gris-texte);
+  margin-top: var(--espace-3);
+}

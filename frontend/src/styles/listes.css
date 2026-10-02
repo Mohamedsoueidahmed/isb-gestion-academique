@@ -1,0 +1,172 @@
+.page-contenu {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 32px;
+}
+
+.entete-page {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--espace-8);
+}
+
+.entete-page h1 {
+  font-family: var(--police-titres);
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.bouton-principal {
+  display: inline-block;
+  background: var(--couleur-vert);
+  color: var(--couleur-blanc);
+  border: none;
+  padding: 10px 18px;
+  border-radius: var(--rayon-petit);
+  font-family: var(--police-texte);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+}
+
+.bouton-principal:hover:not(:disabled) {
+  background: var(--couleur-vert-fonce);
+}
+
+.bouton-principal:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.bouton-secondaire {
+  display: inline-block;
+  background: none;
+  border: 1px solid var(--couleur-bordure);
+  color: var(--couleur-marine);
+  padding: 10px 18px;
+  border-radius: var(--rayon-petit);
+  font-family: var(--police-texte);
+  font-size: 14px;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+}
+
+table.tableau-liste {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--couleur-blanc);
+  border: 1px solid var(--couleur-bordure);
+  border-radius: var(--rayon-moyen);
+  overflow: hidden;
+}
+
+.tableau-liste th {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--couleur-gris-texte);
+  padding: var(--espace-3) var(--espace-4);
+  border-bottom: 1px solid var(--couleur-bordure);
+  background: #FAFAF8;
+}
+
+.tableau-liste td {
+  padding: var(--espace-3) var(--espace-4);
+  font-size: 14px;
+  border-bottom: 1px solid var(--couleur-bordure);
+}
+
+.tableau-liste tr:last-child td {
+  border-bottom: none;
+}
+
+.tableau-liste tr.ligne-cliquable:hover {
+  background: #FAFAF8;
+  cursor: pointer;
+}
+
+.badge {
+  display: inline-block;
+  background: #EEF3F1;
+  color: var(--couleur-vert-fonce);
+  padding: 2px 10px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.ligne-vide {
+  text-align: center;
+  color: var(--couleur-gris-texte);
+  padding: var(--espace-8);
+}
+
+/* Badges de statut — partagés entre la saisie des notes et la fiche étudiant */
+.badge-statut {
+  font-size: 12px;
+  padding: 2px 10px;
+  border-radius: 100px;
+  font-weight: 500;
+}
+
+.badge-manquante {
+  background: #FBF0DC;
+  color: #B8863B;
+}
+
+.badge-saisie {
+  background: #EEF3F1;
+  color: var(--couleur-vert-fonce);
+}
+
+.badge-non-validee {
+  background: #FBEAE7;
+  color: var(--couleur-erreur);
+}
+
+.badge-bloque {
+  font-size: 12px;
+  padding: 2px 10px;
+  border-radius: 100px;
+  font-weight: 500;
+  background: #FBEAE7;
+  color: #B0392A;
+}
+
+.ligne-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espace-2);
+  margin-bottom: var(--espace-4);
+}
+
+.badge-etat {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.badge-valide {
+  background: #E8F0EC;
+  color: var(--couleur-vert-fonce);
+}
+
+.badge-en-attente {
+  background: var(--couleur-electif-fond);
+  color: var(--couleur-electif-texte);
+}
+
+.badge-echoue {
+  background: #FBEAE7;
+  color: var(--couleur-erreur);
+}

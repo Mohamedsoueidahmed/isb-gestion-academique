@@ -1,0 +1,177 @@
+.selecteurs-notes {
+  display: flex;
+  gap: var(--espace-4);
+  margin-bottom: var(--espace-6);
+  background: var(--couleur-blanc);
+  border: 1px solid var(--couleur-bordure);
+  border-radius: var(--rayon-moyen);
+  padding: var(--espace-5) var(--espace-6);
+}
+
+.champ-selecteur {
+  flex: 1;
+}
+
+.champ-selecteur label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: var(--espace-2);
+}
+
+.champ-selecteur select {
+  width: 100%;
+  padding: 9px 12px;
+  font-family: var(--police-texte);
+  font-size: 14px;
+  border: 1px solid var(--couleur-bordure);
+  border-radius: var(--rayon-petit);
+  background: var(--couleur-fond);
+  color: var(--couleur-marine);
+}
+
+.champ-selecteur select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bandeau-progression {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--espace-4);
+  font-size: 13px;
+  color: var(--couleur-gris-texte);
+}
+
+.compteur-manquantes {
+  color: #B8863B;
+  font-weight: 500;
+}
+
+.compteur-complet {
+  color: var(--couleur-vert-fonce);
+  font-weight: 500;
+}
+
+table.tableau-saisie-notes {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--couleur-blanc);
+  border: 1px solid var(--couleur-bordure);
+  border-radius: var(--rayon-moyen);
+  overflow: hidden;
+}
+
+.tableau-saisie-notes th {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--couleur-gris-texte);
+  padding: var(--espace-3) var(--espace-4);
+  border-bottom: 1px solid var(--couleur-bordure);
+  background: #FAFAF8;
+}
+
+.tableau-saisie-notes td {
+  padding: 10px var(--espace-4);
+  font-size: 14px;
+  border-bottom: 1px solid var(--couleur-bordure);
+}
+
+.tableau-saisie-notes tr:last-child td {
+  border-bottom: none;
+}
+
+.cellule-note input {
+  width: 70px;
+  padding: 7px 10px;
+  font-family: var(--police-texte);
+  font-size: 14px;
+  border: 1px solid var(--couleur-bordure);
+  border-radius: var(--rayon-petit);
+  text-align: center;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.cellule-note input:focus {
+  outline: none;
+  border-color: var(--couleur-vert);
+  box-shadow: 0 0 0 3px rgba(61, 107, 92, 0.12);
+}
+
+.cellule-note input.non-saisie {
+  background: #FBF6EC;
+  border-color: #E8D4A8;
+}
+
+.cellule-note input.saisie {
+  background: var(--couleur-blanc);
+}
+
+.cellule-note input.vient-d-etre-sauvegardee {
+  border-color: var(--couleur-vert);
+  background: #EEF3F1;
+}
+
+.cellule-note input.erreur {
+  border-color: var(--couleur-erreur);
+}
+
+.message-erreur-cellule {
+  font-size: 11px;
+  color: var(--couleur-erreur);
+  margin-top: 4px;
+}
+
+.cellule-moyenne {
+  font-weight: 600;
+  font-family: var(--police-titres);
+}
+
+.cellule-session2-inactive {
+  color: var(--couleur-bordure);
+  font-size: 13px;
+  text-align: center;
+}
+
+.entete-cycle {
+  font-size: 13px;
+  color: var(--couleur-gris-texte);
+  margin-bottom: var(--espace-4);
+}
+
+.onglets-terme {
+  display: flex;
+  gap: var(--espace-2);
+  margin-bottom: var(--espace-4);
+  border-bottom: 1px solid var(--couleur-bordure);
+}
+
+.onglet-terme {
+  padding: 9px 16px;
+  font-family: var(--police-texte);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--couleur-gris-texte);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  margin-bottom: -1px;
+}
+
+.onglet-terme:hover {
+  color: var(--couleur-marine);
+}
+
+.onglet-terme-actif {
+  color: var(--couleur-marine);
+  border-bottom-color: var(--couleur-vert);
+}
+
+.bouton-telechargement-terme {
+  margin-left: auto;
+  margin-bottom: var(--espace-2);
+}
+

@@ -1,0 +1,75 @@
+.electifs-resume {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding: 14px 18px;
+  background: white;
+  border: 1px solid var(--couleur-bordure);
+  border-radius: var(--rayon-moyen);
+}
+
+.electifs-resume-chiffre {
+  font-family: var(--police-titres);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--couleur-electif);
+}
+
+.electifs-resume-texte {
+  font-size: 14px;
+  color: var(--couleur-gris-texte);
+}
+
+.electifs-barre-progression {
+  flex: 1;
+  height: 8px;
+  background: #EDEBE4;
+  border-radius: 100px;
+  overflow: hidden;
+  max-width: 240px;
+  margin-left: auto;
+}
+
+.electifs-barre-progression-remplie {
+  height: 100%;
+  background: var(--couleur-electif);
+  border-radius: 100px;
+  transition: width 0.25s ease;
+}
+
+.select-electif {
+  width: 100%;
+  max-width: 380px;
+  padding: 9px 12px;
+  font-family: var(--police-texte);
+  font-size: 14px;
+  border-radius: var(--rayon-petit);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.select-electif-choisi {
+  border: 1.5px solid var(--couleur-electif);
+  background: var(--couleur-electif-fond);
+  color: var(--couleur-electif-texte);
+  font-weight: 500;
+}
+
+.select-electif-non-choisi {
+  border: 1.5px dashed var(--couleur-bordure);
+  background: var(--couleur-fond);
+  color: var(--couleur-gris-texte);
+}
+
+.select-electif:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.electifs-libelle-enregistrement {
+  margin-left: 10px;
+  font-size: 12px;
+  color: var(--couleur-electif);
+  font-weight: 500;
+}

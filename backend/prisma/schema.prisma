@@ -1,0 +1,682 @@
+// ============================================================================
+// SCHEMA PRISMA — Plateforme de gestion académique universitaire
+// Périmètre : administration uniquement (Section 1 + corrections validées)
+// ============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================================
+// SÉCURITÉ — Utilisateur et rôle
+// Pas de rôle "Enseignant" : le professeur n'a aucun accès applicatif (confirmé)
+// ============================================================================
+
+enum LibelleRole {
+  ADMINISTRATEUR
+  RESPONSABLE_ACADEMIQUE
+}
+
+model Role {
+  id          String       @id @default(uuid())
+  libelle     LibelleRole  @unique
+  utilisateurs Utilisateur[]
+
+  @@map("roles")
+}
+
+model Utilisateur {
+  id              String    @id @default(uuid())
+  nom             String
+  email           String    @unique
+  motDePasseHash  String    @map("mot_de_passe_hash")
+  roleId          String    @map("role_id")
+  role            Role      @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  estActif        Boolean   @default(true) @map("est_actif")
+  creeLe          DateTime  @default(now()) @map("cree_le")
+
+  notesSaisies      Note[]                  @relation("NoteSaisiePar")
+  composantesSaisies EvaluationComposante[]  @relation("ComposanteSaisiePar")
+  absencesSaisies   Absence[]        @relation("AbsenceSaisiePar")
+  entreesJournal    JournalAudit[]
+
+  @@map("utilisateurs")
+}
+
+// ============================================================================
+// RÉFÉRENTIEL — Université, année universitaire
+// ============================================================================
+
+model Universite {
+  id            String   @id @default(uuid())
+  nom           String
+  nomCourt      String?  @map("nom_court")
+  logoUrl       String?  @map("logo_url")
+  couleursJson  Json?    @map("couleurs_json")
+  contactJson   Json?    @map("contact_json")
+
+  @@map("universite")
+}
+
+model AnneeUniversitaire {
+  id          String   @id @default(uuid())
+  libelle     String   @unique // ex. "2026-2027"
+  dateDebut   DateTime @map("date_debut")
+  dateFin     DateTime @map("date_fin")
+  estActive   Boolean  @default(false) @map("est_active")
+
+  classes         Classe[]
+  inscriptions    Inscription[]
+  affectations    AffectationEnseignant[]
+
+  @@map("annees_universitaires")
+}
+
+// ============================================================================
+// RÉFÉRENTIEL PÉDAGOGIQUE — Formation, Parcours, Niveau, Semestre, UE, Cours
+// ============================================================================
+
+enum CycleFormation {
+  LICENCE
+  MASTER
+}
+
+model Formation {
+  id              String          @id @default(uuid())
+  nom             String          // ex. "Licence Administration des Affaires"
+  cycle           CycleFormation? // optionnel pour ne pas casser la migration sur les formations déjà existantes ; nécessaire pour le calcul des moyennes
+  nombreNiveaux   Int             @map("nombre_niveaux")
+  creditsTotal    Int             @map("credits_total")
+  heuresTotal     Int             @map("heures_total")
+  estActive       Boolean         @default(true) @map("est_active")
+
+  parcours        Parcours[]
+  coursElectifs   CoursElectif[]
+
+  @@map("formations")
+}
+
+model Parcours {
+  id           String    @id @default(uuid())
+  formationId  String    @map("formation_id")
+  formation    Formation @relation(fields: [formationId], references: [id], onDelete: Restrict)
+  nom          String    // ex. "Comptabilité, Contrôle et Audit"
+  codeCourt    String    @map("code_court") // ex. "CCA"
+  // Un parcours qu'on ne veut plus proposer (structure abandonnée, plus
+  // jamais choisi pour une nouvelle inscription) sans effacer sa
+  // structure — utile si aucune inscription n'existe encore dessous,
+  // pour ne pas perdre la maquette au cas où il redeviendrait pertinent.
+  estActif     Boolean   @default(true) @map("est_actif")
+
+  niveaux      Niveau[]
+  classes      Classe[]
+  inscriptions Inscription[]
+
+  @@unique([formationId, codeCourt])
+  @@map("parcours")
+}
+
+model Niveau {
+  id          String   @id @default(uuid())
+  parcoursId  String   @map("parcours_id")
+  parcours    Parcours @relation(fields: [parcoursId], references: [id], onDelete: Restrict)
+  libelle     String   // ex. "L1"
+  ordre       Int      // 1, 2, 3
+
+  semestres     Semestre[]
+  classes       Classe[]
+  inscriptions  Inscription[]
+  lots          Lot[]
+
+  @@unique([parcoursId, libelle])
+  @@map("niveaux")
+}
+
+model Semestre {
+  id         String  @id @default(uuid())
+  niveauId   String  @map("niveau_id")
+  niveau     Niveau  @relation(fields: [niveauId], references: [id], onDelete: Restrict)
+  libelle    String  // ex. "S1"
+  ordre      Int     // 1 ou 2 au sein du niveau
+  credits    Int     @default(30)
+
+  ue           UE[]
+  classesOuActif Classe[]
+
+  @@unique([niveauId, libelle])
+  @@map("semestres")
+}
+
+enum NatureUE {
+  FONDAMENTALE
+  TRANSVERSALE
+  OPTIONNELLE
+}
+
+model UE {
+  id          String    @id @default(uuid())
+  semestreId  String    @map("semestre_id")
+  semestre    Semestre  @relation(fields: [semestreId], references: [id], onDelete: Restrict)
+  code        String    // ex. "UE.01"
+  nature      NatureUE
+  credits     Int       // Le crédit appartient à l'UE, pas au cours (correction validée)
+
+  // Distingue un choix FERMÉ (options fixes et nommées dès la maquette,
+  // ex. Stage/Mémoire, Arabe/Français — jamais mélangé au catalogue
+  // générique) d'un créneau OUVERT (vide au départ, alimenté par le
+  // catalogue électif, ex. UE.16/20/23). Sans ce champ, une UE ouverte où
+  // un étudiant a déjà choisi un cours se comportait, à tort, comme si
+  // elle était fermée, cachant le reste du catalogue à tous les autres.
+  choixExclusif Boolean @default(false) @map("choix_exclusif")
+
+  // Une UE de fin de cycle (Stage, ou Stage/Mémoire) ne devient
+  // disponible qu'une fois TOUT le reste du cycle validé — distinct de
+  // choixExclusif, qui sert aussi à Arabe/Français (un choix fermé, mais
+  // jamais une fin de cycle). Les deux se recoupent pour Stage/Mémoire,
+  // mais jamais pour un choix de langue.
+  finDeCycle    Boolean @default(false) @map("fin_de_cycle")
+
+  cours       Cours[]
+  choixElectifs ChoixElectif[]
+
+  @@unique([semestreId, code])
+  @@map("ue")
+}
+
+model Cours {
+  id              String   @id @default(uuid())
+  ueId            String   @map("ue_id")
+  ue              UE       @relation(fields: [ueId], references: [id], onDelete: Restrict)
+  code            String   // ex. "ACCT200"
+  titre           String
+  prerequisCode   String?  @map("prerequis_code") // texte libre, référence un autre code cours
+  heures          Int?
+  estElectif      Boolean  @default(false) @map("est_electif")
+
+  notes                Note[]
+  composantesEvaluation EvaluationComposante[]
+  absences             Absence[]
+  affectationsEnseignant AffectationEnseignant[]
+  choixElectifs        ChoixElectif[]
+  affectationsCours    AffectationCours[]
+  deblocagesPrerequis  DeblocagePrerequis[]
+  souhaitsCours        SouhaitCours[]
+  lotsCours            LotCours[]
+
+  @@unique([ueId, code])
+  @@map("cours")
+}
+
+// Pool indépendant des cours électifs génériques — non lié à un parcours/semestre précis
+// L'administration choisit manuellement lequel remplit chaque emplacement "Optionnelle"
+model CoursElectif {
+  id             String     @id @default(uuid())
+  code           String     @unique // ex. "DROI400"
+  titre          String
+  prerequisCode  String?    @map("prerequis_code")
+  heures         Int?
+  credits        Int?
+  formationId    String?    @map("formation_id")
+  formation      Formation? @relation(fields: [formationId], references: [id], onDelete: Restrict)
+
+  // Optionnel au niveau du schéma (migration purement additive, les 8
+  // lignes déjà en base seront rattachées à la Licence par un script à
+  // part) — mais toujours exigé par la validation de l'application pour
+  // toute nouvelle entrée, jamais un catalogue sans formation d'origine.
+  @@map("cours_electifs")
+}
+
+/**
+ * Le choix d'UN étudiant pour UN créneau électif (une UE de nature
+ * OPTIONNELLE) — le choix est individuel, jamais celui de toute la classe :
+ * deux étudiants du même UE.16 peuvent choisir deux cours différents du
+ * catalogue CoursElectif.
+ *
+ * coursId pointe vers un vrai Cours (créé à la volée depuis le catalogue
+ * au moment du choix, jamais depuis CoursElectif directement) — une fois
+ * ce lien posé, l'étudiant est noté normalement sur ce cours, exactement
+ * comme n'importe quel autre. Le moteur de calcul traite une UE
+ * OPTIONNELLE comme n'ayant, pour CET étudiant, que ce seul cours-là —
+ * jamais tous les cours électifs qui pourraient exister sous cette UE.
+ */
+model ChoixElectif {
+  id             String       @id @default(uuid())
+  inscriptionId  String       @map("inscription_id")
+  inscription    Inscription  @relation(fields: [inscriptionId], references: [id], onDelete: Restrict)
+  ueId           String       @map("ue_id")
+  ue             UE           @relation(fields: [ueId], references: [id], onDelete: Restrict)
+  coursId        String       @map("cours_id")
+  cours          Cours        @relation(fields: [coursId], references: [id], onDelete: Restrict)
+  terme          Terme?
+
+  // Un seul choix par étudiant et par créneau électif — le changer plus
+  // tard écrase l'ancien choix, ne le duplique jamais.
+  @@unique([inscriptionId, ueId])
+  @@map("choix_electifs")
+}
+
+/**
+ * Un cours assigné à un étudiant précis, dans un lot numéroté — le
+ * mécanisme du parcours flexible (Master ET Licence) : l'étudiant ne suit
+ * pas un programme figé par classe, mais progresse cours par cours, 2 à 5
+ * à la fois, choisis par l'administration parmi ceux dont le prérequis est
+ * validé.
+ *
+ * Le résultat (réussi/échoué) n'est JAMAIS stocké ici — il se lit depuis
+ * les vraies notes (Note), exactement comme pour le reste du système. Ce
+ * modèle retient seulement QUELS cours sont ou ont été assignés, et dans
+ * quel lot — jamais un second endroit de vérité sur la réussite.
+ */
+/**
+ * Un souhait : un étudiant aimerait faire ce cours, mais ce n'est pas
+ * encore réel — aucune limite de nombre, puisque souhaiter ne coûte rien
+ * tant que ce n'est pas ouvert. Devient une vraie AffectationCours dès que
+ * l'administration ouvre ce cours précis, SAUF si l'étudiant a déjà 5
+ * cours réellement en cours à ce moment-là : le souhait reste alors en
+ * attente, inchangé, jusqu'à ce qu'une place se libère.
+ */
+model SouhaitCours {
+  id             String       @id @default(uuid())
+  inscriptionId  String       @map("inscription_id")
+  inscription    Inscription  @relation(fields: [inscriptionId], references: [id], onDelete: Restrict)
+  coursId        String       @map("cours_id")
+  cours          Cours        @relation(fields: [coursId], references: [id], onDelete: Restrict)
+  creeLe         DateTime     @default(now()) @map("cree_le")
+
+  @@unique([inscriptionId, coursId])
+  @@map("souhaits_cours")
+}
+
+enum StatutLot {
+  OUVERT
+  FERME
+}
+
+/**
+ * Comment un étudiant en vient à suivre un cours précis, par rapport au
+ * niveau (M1/M2) de son inscription au moment où il le reçoit — jamais
+ * recalculé plus tard, une vraie trace historique. NORMAL : le cours
+ * appartient au même niveau que l'inscription. ANTICIPE : le cours
+ * appartient à un niveau ultérieur (pris en avance). EN_RETARD : le cours
+ * appartient à un niveau antérieur (rattrapé plus tard).
+ */
+enum TypeSuivi {
+  NORMAL
+  ANTICIPE
+  EN_RETARD
+}
+
+/**
+ * La période académique d'un lot — Automne/Printemps/Été — distincte du
+ * semestre officiel d'un cours, qui ne change jamais. Optionnelle : aucune
+ * correspondance automatique n'est imposée entre un Terme et un semestre,
+ * c'est l'administration qui la choisit à la création de chaque lot.
+ */
+enum Terme {
+  AUTOMNE
+  PRINTEMPS
+  ETE
+}
+
+/**
+ * Un lot réel : une porte ouverte sur un ensemble précis de cours, pour un
+ * niveau donné. Tant qu'il reste OUVERT, tout nouveau souhait sur un de
+ * ses cours s'inscrit immédiatement, sans nouvelle confirmation — voir
+ * exprimerLotSouhaits. Fermer un lot (statut FERME) arrête ces
+ * inscriptions automatiques futures ; jamais rétroactif sur qui est déjà
+ * inscrit. Un même cours peut appartenir à plusieurs lots différents au
+ * fil du temps (voir LotCours).
+ */
+model Lot {
+  id            String     @id @default(uuid())
+  niveauId      String     @map("niveau_id")
+  niveau        Niveau     @relation(fields: [niveauId], references: [id], onDelete: Restrict)
+  numero        Int
+  statut        StatutLot  @default(OUVERT)
+  terme         Terme?
+  dateOuverture DateTime   @default(now()) @map("date_ouverture")
+  dateFermeture DateTime?  @map("date_fermeture")
+
+  cours         LotCours[]
+  affectations  AffectationCours[]
+
+  @@map("lots")
+}
+
+/**
+ * Un cours précis appartenant à un lot précis — table de jonction, puisqu'un
+ * lot contient plusieurs cours et qu'un même cours peut appartenir à
+ * plusieurs lots au fil du temps (jamais une relation un-à-un).
+ */
+model LotCours {
+  id       String @id @default(uuid())
+  lotId    String @map("lot_id")
+  lot      Lot    @relation(fields: [lotId], references: [id], onDelete: Restrict)
+  coursId  String @map("cours_id")
+  cours    Cours  @relation(fields: [coursId], references: [id], onDelete: Restrict)
+
+  @@unique([lotId, coursId])
+  @@map("lot_cours")
+}
+
+/**
+ * Un cours RÉELLEMENT en cours pour un étudiant — jamais plus de 5 sans
+ * résultat final à la fois, plafond strict, quelle que soit la façon dont
+ * cette ligne est apparue (conversion d'un souhait à l'ouverture d'un
+ * cours, ou inscription directe par l'administration).
+ */
+model AffectationCours {
+  id             String       @id @default(uuid())
+  inscriptionId  String       @map("inscription_id")
+  inscription    Inscription  @relation(fields: [inscriptionId], references: [id], onDelete: Restrict)
+  coursId        String       @map("cours_id")
+  cours          Cours        @relation(fields: [coursId], references: [id], onDelete: Restrict)
+  numeroLot      Int?         @map("numero_lot")
+  lotId          String?      @map("lot_id")
+  lot            Lot?         @relation(fields: [lotId], references: [id], onDelete: Restrict)
+  typeSuivi      TypeSuivi    @default(NORMAL) @map("type_suivi")
+  terme          Terme?
+  // Une matière déjà validée dans une autre université avant l'arrivée
+  // de l'étudiant ici — jamais affectée à un Terme précis (elle
+  // n'appartient à aucun découpage de l'année en cours), donc jamais
+  // comptée dans le nombre de matières d'un Terme côté financier, sans
+  // avoir besoin d'y toucher : le filtre par Terme l'exclut déjà de
+  // lui-même. `noteRetenue` sert UNIQUEMENT à ce que la moyenne
+  // générale (pondérée par crédits) reste juste — jamais affichée comme
+  // une vraie note, jamais utilisée pour décider si CETTE matière est
+  // validée (elle l'est déjà, par la dispense elle-même).
+  dispense          Boolean  @default(false)
+  universiteOrigine String?  @map("universite_origine")
+  noteRetenue       Decimal? @map("note_retenue") @db.Decimal(4, 2)
+  creeLe         DateTime     @default(now()) @map("cree_le")
+
+  // Un seul cours affecté par étudiant, jamais deux fois — même s'il est
+  // repris dans un lot ultérieur après un échec, c'est la même ligne qui
+  // change de lot, jamais une nouvelle créée à côté.
+  @@unique([inscriptionId, coursId])
+  @@map("affectations_cours")
+}
+
+/**
+ * Déblocage manuel d'un prérequis non validé — l'administration peut
+ * autoriser un étudiant à prendre un cours malgré un prérequis en échec.
+ * La présence d'une ligne suffit ; sa seule fonction est d'exister ou non.
+ */
+model DeblocagePrerequis {
+  id             String       @id @default(uuid())
+  inscriptionId  String       @map("inscription_id")
+  inscription    Inscription  @relation(fields: [inscriptionId], references: [id], onDelete: Restrict)
+  coursId        String       @map("cours_id")
+  cours          Cours        @relation(fields: [coursId], references: [id], onDelete: Restrict)
+  creeLe         DateTime     @default(now()) @map("cree_le")
+
+  @@unique([inscriptionId, coursId])
+  @@map("deblocages_prerequis")
+}
+
+// ============================================================================
+// ORGANISATION — Classe (unité de gestion centrale)
+// Jamais identifiée par son seul nom : toujours contextualisée
+// ============================================================================
+
+model Classe {
+  id                    String              @id @default(uuid())
+  anneeUniversitaireId  String              @map("annee_universitaire_id")
+  anneeUniversitaire    AnneeUniversitaire  @relation(fields: [anneeUniversitaireId], references: [id], onDelete: Restrict)
+  parcoursId            String              @map("parcours_id")
+  parcours              Parcours            @relation(fields: [parcoursId], references: [id], onDelete: Restrict)
+  niveauId              String              @map("niveau_id")
+  niveau                Niveau              @relation(fields: [niveauId], references: [id], onDelete: Restrict)
+  // Le semestre actuellement actif pour la saisie et la consultation —
+  // bascule manuellement par l'administration (jamais automatique), une
+  // fois que tout S1 est jugé complet. Toujours l'un des deux semestres du
+  // niveau de cette classe (vérifié en code, pas en contrainte SQL, un
+  // niveau n'ayant que deux semestres liés par niveauId).
+  semestreActifId       String              @map("semestre_actif_id")
+  semestreActif         Semestre            @relation(fields: [semestreActifId], references: [id], onDelete: Restrict)
+  nom                   String              // ex. "L1-CCA-A"
+  effectifMax           Int?                @map("effectif_max")
+
+  inscriptions          Inscription[]
+  affectationsEnseignant AffectationEnseignant[]
+
+  @@unique([anneeUniversitaireId, parcoursId, niveauId, nom])
+  @@map("classes")
+}
+
+// ============================================================================
+// ÉTUDIANT ET HISTORIQUE — Inscription comme entité pivot
+// Jamais de classeId direct sur l'étudiant : l'historique doit être préservé
+// ============================================================================
+
+enum StatutEtudiant {
+  ACTIF
+  ARCHIVE
+  BLOQUE
+}
+
+model Etudiant {
+  id            String          @id @default(uuid())
+  matricule     String          @unique
+  nom           String
+  // Informations administratives — reprises ici depuis le logiciel
+  // financier, qui ne crée plus d'étudiant lui-même. Optionnelles pour
+  // ne pas casser les fiches déjà créées avant cette évolution.
+  inn           String?
+  dateNaissance DateTime?       @map("date_naissance")
+  typeBac       String?         @map("type_bac")
+  numeroBac     String?         @map("numero_bac")
+  statut        StatutEtudiant  @default(ACTIF)
+  creeLe        DateTime        @default(now()) @map("cree_le")
+
+  inscriptions  Inscription[]
+
+  @@map("etudiants")
+}
+
+enum StatutInscription {
+  ACTIVE
+  CLOTUREE
+}
+
+model Inscription {
+  id                    String              @id @default(uuid())
+  etudiantId            String              @map("etudiant_id")
+  etudiant              Etudiant            @relation(fields: [etudiantId], references: [id], onDelete: Restrict)
+  anneeUniversitaireId  String              @map("annee_universitaire_id")
+  anneeUniversitaire    AnneeUniversitaire  @relation(fields: [anneeUniversitaireId], references: [id], onDelete: Restrict)
+  parcoursId            String              @map("parcours_id")
+  parcours              Parcours            @relation(fields: [parcoursId], references: [id], onDelete: Restrict)
+  niveauId              String              @map("niveau_id")
+  niveau                Niveau              @relation(fields: [niveauId], references: [id], onDelete: Restrict)
+  classeId              String              @map("classe_id")
+  classe                Classe              @relation(fields: [classeId], references: [id], onDelete: Restrict)
+  dateInscription       DateTime            @default(now()) @map("date_inscription")
+  statutInscription     StatutInscription   @default(ACTIVE) @map("statut_inscription")
+
+  notes       Note[]
+  composantesEvaluation EvaluationComposante[]
+  absences    Absence[]
+  choixElectifs ChoixElectif[]
+  affectationsCours    AffectationCours[]
+  deblocagesPrerequis  DeblocagePrerequis[]
+  souhaitsCours        SouhaitCours[]
+
+  // Un étudiant a une seule inscription active par niveau et par année —
+  // l'inscription couvre maintenant l'année entière (S1 et S2 ensemble),
+  // plus une par semestre séparément.
+  @@unique([etudiantId, anneeUniversitaireId, niveauId])
+  @@map("inscriptions")
+}
+
+// ============================================================================
+// SAISIE — Notes et absences (administration uniquement)
+// ============================================================================
+
+/**
+ * Les types de composantes possibles, toutes formations confondues. DEVOIR_1
+ * et DEVOIR_2 sont réservés à la Licence ; DEVOIR est réservé au Master —
+ * jamais les deux à la fois pour une même inscription/cours, mais modélisés
+ * dans un seul enum pour rester dans une seule table (voir EvaluationComposante).
+ */
+enum TypeComposante {
+  DEVOIR_1           // Licence uniquement
+  DEVOIR_2           // Licence uniquement
+  EXPOSE             // Licence et Master
+  EXAMEN_SESSION_1   // Licence et Master
+  EXAMEN_SESSION_2   // Licence et Master — n'existe que si nécessaire
+  DEVOIR             // Master uniquement
+}
+
+enum StatutValidationMatiere {
+  VALIDEE
+  NON_VALIDEE
+  EN_ATTENTE_SESSION_2
+}
+
+/**
+ * La vraie saisie brute : une ligne par composante d'évaluation (Devoir 1,
+ * Exposé, Examen Session 1...), jamais une seule valeur globale — c'est de
+ * là que la moyenne (Note.valeur) est recalculée automatiquement à chaque
+ * sauvegarde.
+ */
+model EvaluationComposante {
+  id             String                        @id @default(uuid())
+  inscriptionId  String                        @map("inscription_id")
+  inscription    Inscription                   @relation(fields: [inscriptionId], references: [id], onDelete: Restrict)
+  coursId        String                        @map("cours_id")
+  cours          Cours                         @relation(fields: [coursId], references: [id], onDelete: Restrict)
+  type           TypeComposante
+  valeur         Decimal?                      @db.Decimal(4, 2) // NULL = non saisie
+  dateSaisie     DateTime?                     @map("date_saisie")
+  derniereModif  DateTime?                     @updatedAt @map("derniere_modification")
+  saisieParId    String?                       @map("saisie_par_id")
+  saisiePar      Utilisateur?                  @relation("ComposanteSaisiePar", fields: [saisieParId], references: [id], onDelete: SetNull)
+
+  historique     EvaluationComposanteHistorique[]
+
+  @@unique([inscriptionId, coursId, type])
+  @@map("evaluations_composantes")
+}
+
+// Même principe que NoteHistorique (Amélioration C) : jamais perdre une
+// valeur précédente avant écrasement — appliqué ici où la vraie saisie a lieu.
+model EvaluationComposanteHistorique {
+  id                       String                @id @default(uuid())
+  evaluationComposanteId   String                @map("evaluation_composante_id")
+  evaluationComposante     EvaluationComposante  @relation(fields: [evaluationComposanteId], references: [id], onDelete: Cascade)
+  ancienneValeur           Decimal?              @db.Decimal(4, 2) @map("ancienne_valeur")
+  modifieLe                DateTime              @default(now()) @map("modifie_le")
+  modifieParId             String?               @map("modifie_par_id")
+
+  @@map("evaluations_composantes_historique")
+}
+
+/**
+ * Devient la MOYENNE CALCULÉE d'une matière, pas une saisie brute — recalculée
+ * automatiquement à chaque modification d'une EvaluationComposante. Le champ
+ * historique existant (NoteHistorique) garde tout son sens : il trace
+ * désormais l'évolution de la moyenne plutôt que d'une saisie manuelle.
+ */
+model Note {
+  id                String                    @id @default(uuid())
+  inscriptionId     String                    @map("inscription_id")
+  inscription       Inscription               @relation(fields: [inscriptionId], references: [id], onDelete: Restrict)
+  coursId           String                    @map("cours_id")
+  cours             Cours                     @relation(fields: [coursId], references: [id], onDelete: Restrict)
+  valeur            Decimal?                  @db.Decimal(4, 2) // NULL = pas encore calculable (composantes manquantes)
+  statutValidation  StatutValidationMatiere?  @map("statut_validation")
+  dateSaisie        DateTime?                 @map("date_saisie")
+  derniereModif     DateTime?                 @updatedAt @map("derniere_modification") // Amélioration A validée
+  saisieParId       String?                   @map("saisie_par_id")
+  saisiePar         Utilisateur?              @relation("NoteSaisiePar", fields: [saisieParId], references: [id], onDelete: SetNull)
+
+  historique        NoteHistorique[] // Amélioration C validée : audit trail
+
+  @@unique([inscriptionId, coursId])
+  @@map("notes")
+}
+
+// Amélioration C validée : conserver chaque valeur précédente avant écrasement
+model NoteHistorique {
+  id            String   @id @default(uuid())
+  noteId        String   @map("note_id")
+  note          Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  ancienneValeur Decimal? @db.Decimal(4, 2) @map("ancienne_valeur")
+  modifieLe     DateTime @default(now()) @map("modifie_le")
+  modifieParId  String?  @map("modifie_par_id")
+
+  @@map("notes_historique")
+}
+
+model Absence {
+  id             String        @id @default(uuid())
+  inscriptionId  String        @map("inscription_id")
+  inscription    Inscription   @relation(fields: [inscriptionId], references: [id], onDelete: Restrict)
+  coursId        String        @map("cours_id")
+  cours          Cours         @relation(fields: [coursId], references: [id], onDelete: Restrict)
+  dateSeance     DateTime      @map("date_seance")
+  estAbsent      Boolean       @default(false) @map("est_absent") // présent par défaut
+  saisieParId    String?       @map("saisie_par_id")
+  saisiePar      Utilisateur?  @relation("AbsenceSaisiePar", fields: [saisieParId], references: [id], onDelete: SetNull)
+
+  @@unique([inscriptionId, coursId, dateSeance])
+  @@map("absences")
+}
+
+// ============================================================================
+// ENSEIGNANT — Donnée pure, aucun rôle applicatif (confirmé à deux reprises)
+// ============================================================================
+
+model Enseignant {
+  id      String  @id @default(uuid())
+  nom     String
+  prenom  String
+
+  affectations  AffectationEnseignant[]
+
+  @@map("enseignants")
+}
+
+model AffectationEnseignant {
+  id                    String              @id @default(uuid())
+  enseignantId          String              @map("enseignant_id")
+  enseignant            Enseignant          @relation(fields: [enseignantId], references: [id], onDelete: Restrict)
+  coursId               String              @map("cours_id")
+  cours                 Cours               @relation(fields: [coursId], references: [id], onDelete: Restrict)
+  classeId              String              @map("classe_id")
+  classe                Classe              @relation(fields: [classeId], references: [id], onDelete: Restrict)
+  anneeUniversitaireId  String              @map("annee_universitaire_id")
+  anneeUniversitaire    AnneeUniversitaire  @relation(fields: [anneeUniversitaireId], references: [id], onDelete: Restrict)
+
+  @@unique([coursId, classeId, anneeUniversitaireId])
+  @@map("affectations_enseignant")
+}
+
+// ============================================================================
+// TRAÇABILITÉ — Journal d'audit (Amélioration F validée)
+// ============================================================================
+
+enum TypeActionAudit {
+  CREATION_ETUDIANT
+  SUPPRESSION_ETUDIANT
+  MODIFICATION_CLASSE
+  CHANGEMENT_AFFECTATION_ENSEIGNANT
+  VERROUILLAGE_SAISIE
+  DEVERROUILLAGE_SAISIE
+}
+
+model JournalAudit {
+  id             String           @id @default(uuid())
+  typeAction     TypeActionAudit  @map("type_action")
+  utilisateurId  String?          @map("utilisateur_id")
+  utilisateur    Utilisateur?     @relation(fields: [utilisateurId], references: [id], onDelete: SetNull)
+  details        Json?
+  dateAction     DateTime         @default(now()) @map("date_action")
+
+  @@map("journal_audit")
+}

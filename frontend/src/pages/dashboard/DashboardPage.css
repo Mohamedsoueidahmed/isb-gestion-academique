@@ -1,0 +1,140 @@
+.page-dashboard-contenu {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 32px;
+}
+
+.page-dashboard-contenu h1 {
+  font-family: var(--police-titres);
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 var(--espace-8);
+}
+
+.bande-chiffres {
+  display: flex;
+  border: 1px solid var(--couleur-bordure);
+  border-radius: var(--rayon-moyen);
+  margin-bottom: var(--espace-10);
+  background: var(--couleur-blanc);
+}
+
+.chiffre-bloc {
+  flex: 1;
+  padding: var(--espace-6);
+}
+
+.chiffre-bloc:not(:last-child) {
+  border-right: 1px solid var(--couleur-bordure);
+}
+
+.chiffre-valeur {
+  font-family: var(--police-titres);
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1;
+  margin-bottom: var(--espace-2);
+}
+
+.chiffre-label {
+  font-size: 13px;
+  color: var(--couleur-gris-texte);
+}
+
+.section-dashboard {
+  margin-bottom: var(--espace-10);
+}
+
+.section-dashboard h2 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+
+.section-sous-titre {
+  font-size: 13px;
+  color: var(--couleur-gris-texte);
+  margin: 0 0 var(--espace-4);
+}
+
+table.tableau-saisie {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--couleur-blanc);
+  border: 1px solid var(--couleur-bordure);
+  border-radius: var(--rayon-moyen);
+  overflow: hidden;
+}
+
+.tableau-saisie th {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--couleur-gris-texte);
+  padding: var(--espace-3) var(--espace-4);
+  border-bottom: 1px solid var(--couleur-bordure);
+  background: #FAFAF8;
+}
+
+.tableau-saisie td {
+  padding: var(--espace-3) var(--espace-4);
+  font-size: 14px;
+  border-bottom: 1px solid var(--couleur-bordure);
+}
+
+.tableau-saisie tr:last-child td {
+  border-bottom: none;
+}
+
+.statut-complet {
+  color: var(--couleur-vert);
+  font-weight: 500;
+}
+
+.statut-incomplet {
+  color: #B8863B;
+  font-weight: 500;
+}
+
+.deux-colonnes {
+  display: flex;
+  gap: var(--espace-6);
+}
+
+.deux-colonnes .section-dashboard {
+  flex: 1;
+}
+
+.liste-repartition {
+  background: var(--couleur-blanc);
+  border: 1px solid var(--couleur-bordure);
+  border-radius: var(--rayon-moyen);
+  padding: 4px 0;
+}
+
+.repartition-ligne {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px var(--espace-4);
+  font-size: 14px;
+}
+
+.repartition-ligne:not(:last-child) {
+  border-bottom: 1px solid var(--couleur-bordure);
+}
+
+.repartition-valeur {
+  color: var(--couleur-gris-texte);
+}
+
+.etat-chargement,
+.etat-erreur {
+  padding: var(--espace-10);
+  text-align: center;
+  color: var(--couleur-gris-texte);
+  font-size: 14px;
+}
+
+.etat-erreur {
+  color: var(--couleur-erreur);
+}

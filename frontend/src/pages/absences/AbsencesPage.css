@@ -1,0 +1,185 @@
+.selecteurs-absences {
+  display: flex;
+  gap: var(--espace-4);
+  margin-bottom: var(--espace-6);
+  background: var(--couleur-blanc);
+  border: 1px solid var(--couleur-bordure);
+  border-radius: var(--rayon-moyen);
+  padding: var(--espace-5) var(--espace-6);
+}
+
+.champ-selecteur {
+  flex: 1;
+}
+
+.champ-selecteur label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: var(--espace-2);
+}
+
+.champ-selecteur select,
+.champ-selecteur input {
+  width: 100%;
+  padding: 9px 12px;
+  font-family: var(--police-texte);
+  font-size: 14px;
+  border: 1px solid var(--couleur-bordure);
+  border-radius: var(--rayon-petit);
+  background: var(--couleur-fond);
+  color: var(--couleur-marine);
+}
+
+.champ-selecteur select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bandeau-progression {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--espace-4);
+  font-size: 13px;
+  color: var(--couleur-gris-texte);
+}
+
+.compteur-absents {
+  color: #B8863B;
+  font-weight: 500;
+}
+
+.compteur-tous-presents {
+  color: var(--couleur-vert-fonce);
+  font-weight: 500;
+}
+
+table.tableau-presence {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--couleur-blanc);
+  border: 1px solid var(--couleur-bordure);
+  border-radius: var(--rayon-moyen);
+  overflow: hidden;
+}
+
+.tableau-presence th {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--couleur-gris-texte);
+  padding: var(--espace-3) var(--espace-4);
+  border-bottom: 1px solid var(--couleur-bordure);
+  background: #FAFAF8;
+}
+
+.tableau-presence td {
+  padding: 10px var(--espace-4);
+  font-size: 14px;
+  border-bottom: 1px solid var(--couleur-bordure);
+}
+
+.tableau-presence tr:last-child td {
+  border-bottom: none;
+}
+
+.case-presence {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-2);
+  cursor: pointer;
+  width: fit-content;
+}
+
+.case-presence input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  accent-color: #B8863B;
+  cursor: pointer;
+}
+
+.bouton-enregistrer {
+  margin-top: var(--espace-5);
+}
+
+.message-confirmation {
+  font-size: 13px;
+  color: var(--couleur-vert-fonce);
+  margin-top: var(--espace-3);
+}
+
+.message-erreur-lot {
+  font-size: 13px;
+  color: var(--couleur-erreur);
+  margin-top: var(--espace-3);
+}
+
+.liste-seances-historique {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.carte-seance {
+  background: white;
+  border: 1px solid var(--couleur-bordure);
+  border-radius: var(--rayon-moyen);
+  padding: 14px 18px;
+}
+
+.carte-seance-entete {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.carte-seance-date {
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.liste-absents-seance {
+  margin: 10px 0 0;
+  padding-left: 20px;
+  font-size: 14px;
+  color: var(--couleur-gris-texte);
+}
+
+.liste-absents-seance li {
+  margin-bottom: 4px;
+}
+
+.onglets-terme {
+  display: flex;
+  gap: var(--espace-2);
+  margin-bottom: var(--espace-4);
+  border-bottom: 1px solid var(--couleur-bordure);
+}
+
+.onglet-terme {
+  padding: 9px 16px;
+  font-family: var(--police-texte);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--couleur-gris-texte);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  margin-bottom: -1px;
+}
+
+.onglet-terme:hover {
+  color: var(--couleur-marine);
+}
+
+.onglet-terme-actif {
+  color: var(--couleur-marine);
+  border-bottom-color: var(--couleur-vert);
+}
+
+.bouton-telechargement-terme {
+  margin-left: auto;
+  margin-bottom: var(--espace-2);
+}

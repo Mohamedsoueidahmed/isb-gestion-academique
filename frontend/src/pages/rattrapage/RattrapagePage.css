@@ -1,0 +1,53 @@
+.groupe-parcours {
+  margin-bottom: var(--espace-8);
+}
+
+.groupe-parcours h2 {
+  font-family: var(--police-titres);
+  font-size: 19px;
+  font-weight: 600;
+  margin: 0 0 var(--espace-4);
+  padding-bottom: var(--espace-2);
+  border-bottom: 1px solid var(--couleur-bordure);
+}
+
+.groupe-niveau {
+  margin-bottom: var(--espace-6);
+}
+
+.groupe-niveau h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--couleur-gris-texte);
+  margin: 0 0 var(--espace-3);
+}
+
+.groupe-classe {
+  margin-bottom: var(--espace-4);
+  margin-left: var(--espace-4);
+}
+
+.groupe-classe h4 {
+  font-family: var(--police-titres);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--couleur-marine);
+  margin: 0 0 var(--espace-3);
+}
+
+.groupe-cours {
+  margin-bottom: var(--espace-4);
+  margin-left: var(--espace-4);
+}
+
+.groupe-cours-titre {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--couleur-vert-fonce);
+  margin: 0 0 var(--espace-2);
+}
+
+.moyenne-proche {
+  color: #B8863B;
+  font-weight: 500;
+}

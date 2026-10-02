@@ -1,0 +1,16 @@
+.selecteur-annee-global {
+  padding: 6px 12px;
+  font-family: var(--police-texte);
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--rayon-petit);
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  cursor: pointer;
+}
+
+.selecteur-annee-global option {
+  color: var(--couleur-marine);
+  background: white;
+}

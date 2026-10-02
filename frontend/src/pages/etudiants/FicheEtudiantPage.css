@@ -1,0 +1,98 @@
+.entete-fiche {
+  background: var(--couleur-blanc);
+  border: 1px solid var(--couleur-bordure);
+  border-radius: var(--rayon-moyen);
+  padding: var(--espace-6);
+  margin-bottom: var(--espace-8);
+}
+
+.entete-fiche h1 {
+  font-family: var(--police-titres);
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0 0 var(--espace-2);
+}
+
+.entete-fiche-matricule {
+  font-family: monospace;
+  font-size: 13px;
+  color: var(--couleur-gris-texte);
+}
+
+.metadonnees-fiche {
+  display: flex;
+  gap: var(--espace-8);
+  margin-top: var(--espace-3);
+}
+
+.metadonnees-fiche > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.metadonnee-label {
+  font-size: 11px;
+  color: var(--couleur-gris-texte);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.section-fiche {
+  margin-bottom: var(--espace-8);
+}
+
+.section-fiche h2 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 var(--espace-4);
+}
+
+.bloc-passage-annee {
+  border: 1px solid var(--couleur-bordure);
+  border-radius: var(--rayon-moyen);
+  padding: var(--espace-4) var(--espace-5);
+  margin-bottom: var(--espace-3);
+}
+
+.entete-bloc-passage {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.resultat-passage {
+  margin-top: var(--espace-3);
+  padding-top: var(--espace-3);
+  border-top: 1px solid var(--couleur-bordure);
+  font-size: 14px;
+}
+
+.resultat-passage-accorde {
+  color: #2E6B45;
+}
+
+.resultat-passage-refuse {
+  color: #B0392A;
+}
+
+.moyenne-annuelle-texte {
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.statut-passage-texte {
+  font-weight: 600;
+  font-size: 15px;
+  margin-top: 4px;
+}
+
+.bandeau-bloque {
+  background: #FBEAE7;
+  border: 1px solid #F0C9C2;
+  color: #B0392A;
+  border-radius: var(--rayon-moyen);
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
