@@ -1,0 +1,102 @@
+# Version de PRODUCTION du système académique (remplace la version de test).
+#
+# Ce qui change par rapport à la version de test :
+#   - le port 3000 du backend n'est plus publié : seul le site (port 8080) est
+#     joignable depuis le réseau, le backend et la base restent à l'intérieur
+#     de Docker ;
+#   - chaque service a un contrôle de santé (docker compose ps affiche
+#     « healthy ») et le backend attend que la base soit prête ;
+#   - les journaux sont limités à 3 fichiers de 10 Mo par service, pour ne
+#     jamais remplir le disque ;
+#   - la liste des ordinateurs autorisés vient du dossier acces-reseau/.
+#
+# Les mots de passe viennent du fichier .env à la racine de CE dossier (jamais
+# celui de backend/, jamais commité).
+
+x-journaux: &journaux
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  postgres-academique:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-gestion_academique_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Le mot de passe de la base est requis — voir .env.docker.example}
+      POSTGRES_DB: ${POSTGRES_DB:-gestion_academique}
+    volumes:
+      - donnees-academique:/var/lib/postgresql/data
+    networks:
+      - isb-reseau
+    # Arrêt « rapide » de PostgreSQL : une coupure ou un redémarrage du serveur
+    # ferme la base proprement au lieu de la tuer après 10 secondes.
+    stop_signal: SIGINT
+    stop_grace_period: 1m
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    logging: *journaux
+
+  backend-academique:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-gestion_academique_user}:${POSTGRES_PASSWORD}@postgres-academique:5432/${POSTGRES_DB:-gestion_academique}?schema=public
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET est requis}
+      PORT: 3000
+      NODE_ENV: production
+      CLE_API_INTEGRATION: ${CLE_API_INTEGRATION:?CLE_API_INTEGRATION est requis}
+    depends_on:
+      postgres-academique:
+        condition: service_healthy
+    networks:
+      - isb-reseau
+    # Pas de « ports » : le backend n'est joignable que par le site (nginx) et par
+    # la caisse, à l'intérieur du réseau Docker isb-reseau.
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('net').connect(3000,'127.0.0.1').on('connect',()=>process.exit(0)).on('error',()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    logging: *journaux
+
+  frontend-academique:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: /api
+    restart: unless-stopped
+    depends_on:
+      - backend-academique
+    networks:
+      - isb-reseau
+    ports:
+      # 0.0.0.0 = toutes les adresses IPv4 du serveur. Qui peut réellement entrer
+      # est décidé par la liste acces-reseau/ordinateurs-autorises.inc.
+      - "0.0.0.0:8080:80"
+    volumes:
+      - ./acces-reseau:/etc/nginx/acces:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging: *journaux
+
+networks:
+  # « external » : créé une seule fois à la main (docker network create isb-reseau),
+  # jamais par ce fichier. C'est le même réseau que rejoint le projet financier,
+  # pour que la caisse puisse interroger l'académique.
+  isb-reseau:
+    external: true
+
+volumes:
+  donnees-academique:

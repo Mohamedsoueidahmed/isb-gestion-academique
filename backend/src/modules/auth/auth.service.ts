@@ -5,7 +5,7 @@ import { ErreurAuthentification } from '../../shared/erreurs/ErreurMetier';
 import { PayloadJWT } from '../../types/auth.types';
 
 const NOMBRE_TOURS_BCRYPT = 12;
-const DUREE_TOKEN_ACCES = '15m';
+const DUREE_TOKEN_ACCES = '1h';
 const DUREE_TOKEN_RAFRAICHISSEMENT = '7d';
 
 function obtenirSecretJWT(): string {

@@ -1,0 +1,28 @@
+# ============================================================================
+#  ORDINATEURS AUTORISES A OUVRIR LE SITE (academique)
+# ============================================================================
+#  Ce fichier est lu par nginx (voir frontend/nginx.conf).
+#
+#  - Une ligne  "allow ADRESSE;"  par ordinateur autorise.
+#  - Tout ordinateur absent de la liste recoit "403 Forbidden".
+#  - Une ligne qui commence par # est un commentaire.
+#  - Chaque ligne "allow" finit par un point-virgule.
+#
+#  Le fichier qui compte s'appelle  ordinateurs-autorises.inc  (meme dossier
+#  que celui-ci, qui n'est qu'un modele). Apres chaque modification :
+#      docker compose exec frontend-academique nginx -t
+#      docker compose exec frontend-academique nginx -s reload
+#  La premiere commande doit repondre "successful". Sinon, corrigez le
+#  fichier AVANT de lancer la seconde : une erreur ici empecherait le site
+#  de demarrer au prochain redemarrage.
+#
+#  Phase de test : la ligne "allow all;" laisse entrer tout le monde.
+#  EN PRODUCTION : la supprimer et ecrire a la place les adresses des
+#  ordinateurs autorises, par exemple :
+#
+#      allow 192.168.1.21;   # Scolarite
+#      allow 192.168.1.22;   # Direction
+#      allow 192.168.1.23;   # Secretariat
+# ============================================================================
+
+allow all;

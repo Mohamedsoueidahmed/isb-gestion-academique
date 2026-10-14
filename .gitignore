@@ -9,3 +9,6 @@ sauvegardes/
 *.sql.gz
 *.tar.gz
 .DS_Store
+!.env.docker.example
+acces-reseau/ordinateurs-autorises.inc
+.avant-production/
